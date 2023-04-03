@@ -1,6 +1,7 @@
 main.py
-openai_key.py
+/openai_key
 prompt.txt
+system_prompt.txt
 
 .idea
 

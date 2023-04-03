@@ -9,6 +9,7 @@ if __name__ == '__main__':
 
     modules = [
         "MAIrus"
+        "Model",
     ]
 
     from utils import *
