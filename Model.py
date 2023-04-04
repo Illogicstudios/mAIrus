@@ -16,15 +16,15 @@ class Model(ABC):
         self._top_p = top_p
         self.__current_request_thread = None
 
+    # Getter of the model name
     def get_model_name(self):
         return self._model_name
 
+    # Getter of the name beautified
     def get_beautified_name(self):
         return self.__beautified_name
 
-    def _is_current_thread(self):
-        return self.__current_request_thread.ident == threading.current_thread().ident
-
+    # Launch request according to the model
     @abstractmethod
     def request(self, system_prompt, prompt):
         pass
@@ -92,6 +92,7 @@ class ChatGPT3(Model):
         return request_response.choices[0].text.strip(" \n")
 
 
+# Request executed on a distinct thread
 class Request(QThread):
     request_ended = Signal(str)
 

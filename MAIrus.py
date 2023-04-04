@@ -43,7 +43,7 @@ _OUTPUT_SUCCESS_COLOR = "green"
 _OUTPUT_ERROR_COLOR = "red"
 
 _MODELS = [
-    # ChatGPT4(_TEMPERATURE, _TOP_P), #TODO when acces
+    # ChatGPT4(_TEMPERATURE, _TOP_P), #TODO when access
     ChatGPT3_5(_TEMPERATURE, _TOP_P),
     ChatGPT3(_TEMPERATURE, _TOP_P),
 ]
@@ -62,7 +62,7 @@ class MAIrusState(Enum):
 
 class MAIrus(QDialog):
 
-    def __init__(self, prnt=wrapInstance(int(omui.MQtUtil.mainWindow()), QWidget)):
+    def __init__(self, path_to_openai_key, prnt=wrapInstance(int(omui.MQtUtil.mainWindow()), QWidget)):
         super(MAIrus, self).__init__(prnt)
 
         # Common Preferences (common preferences on all tools)
@@ -75,7 +75,7 @@ class MAIrus(QDialog):
         self.__model = "gpt-3.5-turbo"
         with open(os.path.join(os.path.dirname(__file__), "system_prompt.txt"), "r") as system_prompt_file:
             self.__system_prompt = system_prompt_file.read()
-        with open(os.path.join(os.path.dirname(__file__), "openai_key"), "r") as openai_key_file:
+        with open(path_to_openai_key, "r") as openai_key_file:
             openai.api_key = openai_key_file.read()
         self.__request_result = None
 
@@ -124,12 +124,8 @@ class MAIrus(QDialog):
                     self.__model = model
                     break
 
-    def showEvent(self, arg__1: QShowEvent) -> None:
-        pass
-
     # Remove callbacks
     def hideEvent(self, arg__1: QCloseEvent) -> None:
-        self.__mAIrus_state = MAIrusState.INACTIVE
         self.__save_prefs()
 
     # Create the ui
@@ -182,7 +178,7 @@ class MAIrus(QDialog):
         self.__ui_submit_request_btn = QPushButton("Ask to mAIrus")
         self.__ui_submit_request_btn.setFixedHeight(height_button)
         self.__ui_submit_request_btn.setStyleSheet("QPushButton{font-weight:bold}")
-        self.__ui_submit_request_btn.clicked.connect(self.__send_to_openai)
+        self.__ui_submit_request_btn.clicked.connect(self.__send_request)
         executing_phase_layout.addWidget(self.__ui_submit_request_btn, 2)
 
         # mAIrus state
@@ -226,12 +222,14 @@ class MAIrus(QDialog):
         self.__refresh_mairus_state()
 
     def __refresh_mairus_state(self):
+        # Display according to the state
         if self.__mAIrus_state == MAIrusState.WAITING:
             self.__ui_mAIrus_state_lbl.setStyleSheet("border:1px solid " + _WAITING_COLOR)
             self.__ui_mAIrus_state_lbl.setText("Waiting input request")
         elif self.__mAIrus_state == MAIrusState.COMPUTING:
-            weight_border = int((time.time() % (_INTERVAL_COMPUTING*2))/_INTERVAL_COMPUTING)
-            self.__ui_mAIrus_state_lbl.setStyleSheet("border:"+str(weight_border)+"px solid " + _COMPUTING_COLOR)
+            # Blinking if computing
+            weight_border = int((time.time() % (_INTERVAL_COMPUTING * 2)) / _INTERVAL_COMPUTING)
+            self.__ui_mAIrus_state_lbl.setStyleSheet("border:" + str(weight_border) + "px solid " + _COMPUTING_COLOR)
             self.__ui_mAIrus_state_lbl.setText("Computing response")
             threading.Timer(_INTERVAL_COMPUTING, self.__refresh_mairus_state).start()
         elif self.__mAIrus_state == MAIrusState.OUTPUTING_SUCCESS:
@@ -241,10 +239,12 @@ class MAIrus(QDialog):
             self.__ui_mAIrus_state_lbl.setStyleSheet("border:1px solid " + _OUTPUT_ERROR_COLOR)
             self.__ui_mAIrus_state_lbl.setText("Output Error")
 
+    # Change the model selected
     def __on_model_changed(self, index):
         self.__model = self.__ui_model_combobox.itemData(index, Qt.UserRole)
 
-    def __send_to_openai(self):
+    # Send a request to openai with the model selected and the prompt selected
+    def __send_request(self):
         self.__mAIrus_state = MAIrusState.COMPUTING
         self.__refresh_mairus_state()
         prompt = self.__ui_input_area.toPlainText()
@@ -253,6 +253,7 @@ class MAIrus(QDialog):
         request.request_ended.connect(self.__on_result_request_ready)
         request.start()
 
+    # On request end display the result
     def __on_result_request_ready(self, result_request):
         self.__mAIrus_state = MAIrusState.OUTPUTING_SUCCESS
         self.__refresh_mairus_state()
