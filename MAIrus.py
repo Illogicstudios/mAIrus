@@ -8,7 +8,7 @@ import subprocess
 
 import sys
 
-from pymel.core import *
+import pymel.core as pm
 import maya.OpenMayaUI as omui
 
 from PySide2 import QtCore
