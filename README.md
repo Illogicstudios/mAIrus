@@ -7,18 +7,11 @@
 You will need some files that several Illogic tools need. You can get them via this link :
 https://github.com/Illogicstudios/common
 
-You must specify the correct path of the installation folder in the ```template_main.py``` file :
-```python
-if __name__ == '__main__':
-    # TODO specify the right path
-    install_dir = 'PATH/TO/mAIrus'
-    # [...]
-```
 You also have to specify the path to the ```openai_key``` file that only contains your openai key 
 (can be generated here : [API keys](https://platform.openai.com/account/api-keys))
 ```python
-    # TODO Change if needed
-    __PATH_TO_OPENAI_KEY = 'PATH/TO/openai_key'
+# TODO Put your OpenAI API key here
+__PATH_TO_OPENAI_KEY = 'PATH/TO/openai_key'
 ```
 
 ---
